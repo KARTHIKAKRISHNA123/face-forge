@@ -1,0 +1,7 @@
+data/
+celeba/
+*.pt
+*.pth
+checkpoints/
+.venv/
+__pycache__/
