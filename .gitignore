@@ -1,7 +1,13 @@
-data/
-celeba/
-*.pt
-*.pth
-checkpoints/
-.venv/
+# Dataset
+img_align_celeba/
+
+# Jupyter temporary files
+.ipynb_checkpoints/
+
+# Python cache
 __pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
