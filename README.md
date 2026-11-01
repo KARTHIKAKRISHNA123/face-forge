@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎭 Face-Forge
+# Face-Forge
 
 **A vanilla (MLP) Generative Adversarial Network, written from scratch in PyTorch, that learns to synthesize 64×64 human faces from the CelebA dataset.**
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 📸 Demo — Watching the Generator Learn
+## Demo — Watching the Generator Learn
 
 Every epoch, the notebook feeds the **same 16 fixed noise vectors** through the generator and saves a 4×4 grid, so the images below are directly comparable across epochs.
 
@@ -37,27 +37,27 @@ Every epoch, the notebook feeds the **same 16 fixed noise vectors** through the 
   </tr>
 </table>
 
-> **Honest read of the results:** after epoch 1 the generator produces smooth, blurry "average face" blobs. By epoch 5 the faces have more variety (hair colour and shape, face outline, eyes and mouth) but also carry coloured noise and blur — the expected ceiling of a fully-connected GAN trained for only 5 epochs. No quantitative metric (FID or IS) has been computed yet. See [Results](#-results).
+
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [Problem Statement](#-problem-statement) · 2. [Solution Overview](#-solution-overview) · 3. [Key Features](#-key-features)
-4. [Architecture](#-architecture) · 5. [Technology Stack](#-technology-stack--complete-breakdown) · 6. [Request Lifecycle](#-request-lifecycle) · 7. [Data Flow](#-data-flow)
-8. [UML Suite](#-uml-diagrams--full-suite) · 9. [DFDs](#-data-flow-diagrams) · 10. [Folder Structure](#-folder-structure)
-11. [Getting Started](#-getting-started) · 12. [Configuration](#-configuration) · 13. [ML Pipeline](#-ml-pipeline) · 14. [Results](#-results)
-15. [Engineering Decisions](#-engineering-decisions-and-tradeoffs) · 16. [Troubleshooting](#-troubleshooting) · 17. [Roadmap](#-roadmap-proposed) · 18. [Credits](#-credits-and-acknowledgements)
+1. [Problem Statement](#problem-statement) · 2. [Solution Overview](#solution-overview) · 3. [Key Features](#key-features)
+4. [Architecture](#architecture) · 5. [Technology Stack](#technology-stack--complete-breakdown) · 6. [Request Lifecycle](#request-lifecycle) · 7. [Data Flow](#data-flow)
+8. [UML Suite](#uml-diagrams--full-suite) · 9. [DFDs](#data-flow-diagrams) · 10. [Folder Structure](#folder-structure)
+11. [Getting Started](#getting-started) · 12. [Configuration](#configuration) · 13. [ML Pipeline](#ml-pipeline) · 14. [Results](#results)
+15. [Engineering Decisions](#engineering-decisions-and-tradeoffs) · 16. [Troubleshooting](#troubleshooting) · 17. [Roadmap](#roadmap-proposed) · 18. [Credits](#credits-and-acknowledgements)
 
 ---
 
-## 🎯 Problem Statement
+## Problem Statement
 
-Generative modelling asks a deceptively hard question: *given only a pile of examples (here, 202,599 celebrity face photos), can a program learn the underlying distribution well enough to produce new samples that were never in the data?*
+- Generative modelling asks a deceptively hard question: *given only a pile of examples (here, 202,599 celebrity face photos), can a program learn the underlying distribution well enough to produce new samples that were never in the data?*
+- Explicitly modelling the pixel distribution of faces is intractable — a 64×64 RGB image lives in a 12,288-dimensional space.
+- Face-Forge explores the classic answer from Goodfellow et al. (2014): **do not model the density; train a sampler adversarially.**
 
-Explicitly modelling the pixel distribution of faces is intractable — a 64×64 RGB image lives in a 12,288-dimensional space. Face-Forge explores the classic answer from Goodfellow et al. (2014): **do not model the density; train a sampler adversarially.**
-
-## 💡 Solution Overview
+## Solution Overview
 
 Face-Forge implements the original GAN recipe end to end, with every moving part written by hand rather than hidden behind a framework:
 
@@ -66,9 +66,9 @@ Face-Forge implements the original GAN recipe end to end, with every moving part
 - The two networks are trained in alternation: the Discriminator learns to tell them apart, and the Generator learns to fool it.
 - The training loop is **resumable** (full checkpointing of weights, optimizer state, loss history and the fixed sample noise) and **observable** (periodic loss and `D(x)` / `D(G(z))` logging, a sample grid per epoch, loss curves at the end).
 
-This repository is the "vanilla" baseline — fully-connected networks only — intended as the reference point for convolutional (DCGAN-style) upgrades. See the [Roadmap](#-roadmap-proposed).
+This repository is the "vanilla" baseline — fully-connected networks only — intended as the reference point for convolutional (DCGAN-style) upgrades. See the [Roadmap](#roadmap-proposed).
 
-## ✨ Key Features
+## Key Features
 
 | Feature | Details | Where |
 |---|---|---|
@@ -84,7 +84,7 @@ This repository is the "vanilla" baseline — fully-connected networks only — 
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 ### Overall Architecture
 
@@ -177,13 +177,13 @@ flowchart LR
   SYS11 -->|"matplotlib"| SYS14
 ```
 
-> Face-Forge is deliberately a **single-process research notebook**: there is no web server, API, database, authentication layer, frontend or container setup. Those layers are intentionally absent rather than "to be documented" — see [Scope](#-scope-whats-intentionally-not-here).
+
 
 ---
 
-## 🧰 Technology Stack — Complete Breakdown
+## Technology Stack — Complete Breakdown
 
-> Every library, framework and tool present in the project environment. There is no `requirements.txt` yet, so versions below were read from the project's `.venv` (Python 3.12.13, created with `uv`). Packages that are installed but not imported by any project code are marked explicitly.
+
 
 ### Core ML and Data
 
@@ -219,7 +219,7 @@ flowchart LR
 
 ---
 
-## 🔄 Request Lifecycle
+## Request Lifecycle
 
 Face-Forge has no HTTP requests, so the equivalent unit of work is the **training step** (the "read + compute" path) and the **checkpoint save / resume** cycle (the "write" path). Each is traced below with real files, cells and functions.
 
@@ -273,7 +273,7 @@ Face-Forge has no HTTP requests, so the equivalent unit of work is the **trainin
 |---|---|---|---|
 | `Can't get attribute 'ImageProcessor' on <module '__main__'>` | DataLoader worker start-up on Windows | Dataset class defined inside a notebook cell cannot be re-imported by spawned workers | Class moved to `dataset.py` |
 | `G Loss: 100.0000`, `D(G(z))` pinned at `0.00` | Training logs | `Sigmoid` + `BCELoss` clamps `log(0)` to −100, so G's gradient becomes exactly zero | Sigmoid removed from D; `BCEWithLogitsLoss` used |
-| Empty dataset (`len == 0`) | `ImageProcessor` | `img_align_celeba` extracted into a nested sub-folder; non-image entries are filtered out | See [Troubleshooting](#-troubleshooting) |
+| Empty dataset (`len == 0`) | `ImageProcessor` | `img_align_celeba` extracted into a nested sub-folder; non-image entries are filtered out | See [Troubleshooting](#troubleshooting) |
 | Half-written checkpoint after a crash | `last.pth` | Process killed mid-`torch.save` | Write to `last.pth.tmp`, then atomic `os.replace` |
 
 ### Trace 2 — Checkpoint Save and Resume (write path and recovery path)
@@ -311,7 +311,7 @@ save_generated_images(generator, epoch, noise)
 
 ---
 
-## 🌊 Data Flow
+## Data Flow
 
 ### Tensor Shapes at Every Stage
 
@@ -366,10 +366,10 @@ There is no cache layer. The only reuse mechanisms are `persistent_workers=True`
 
 ---
 
-## 📐 UML Diagrams — Full Suite
+## UML Diagrams — Full Suite
 
 <details>
-<summary>📐 UML Diagrams — Full Suite (9 Diagrams + Swimlane)</summary>
+<summary>UML Diagrams — Full Suite (9 Diagrams + Swimlane)</summary>
 
 ### UML 1 — Use Case Diagram
 
@@ -701,10 +701,10 @@ graph TB
 
 ---
 
-## 📊 Data Flow Diagrams
+## Data Flow Diagrams
 
 <details>
-<summary>📊 Data Flow Diagrams — Level 0 and Level 1</summary>
+<summary>Data Flow Diagrams — Level 0 and Level 1</summary>
 
 ### DFD Level 0 — Context Diagram
 
@@ -754,7 +754,7 @@ flowchart LR
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 face-forge/
@@ -777,7 +777,7 @@ face-forge/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -827,7 +827,7 @@ face-forge/img_align_celeba/000002.jpg
 ...                                   (202,599 files in total)
 ```
 
-> ⚠️ Some downloads unzip to `img_align_celeba/img_align_celeba/…`. Flatten that, otherwise `ImageProcessor` finds zero images (it ignores sub-folders).
+
 
 ### Run
 
@@ -841,7 +841,7 @@ Open `vanilla_gan.ipynb` and **Run All**. With `RESUME = True` it continues from
 
 ### Generate Faces from a Saved Generator
 
-> ℹ️ *Usage snippet derived from the checkpoint format in `save_checkpoint()`; the repo does not ship a standalone generation script yet.* Run it in the notebook after the `Generator` cell has been executed.
+
 
 ```python
 generator = Generator().to(device)
@@ -857,7 +857,7 @@ plt.imshow(grid.permute(1, 2, 0)); plt.axis("off"); plt.show()
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 There are **no environment variables or config files**. All settings are constants in the notebook:
 
@@ -880,7 +880,7 @@ There are **no environment variables or config files**. All settings are constan
 
 ---
 
-## 🧠 ML Pipeline
+## ML Pipeline
 
 ### Dataset
 
@@ -895,7 +895,7 @@ There are **no environment variables or config files**. All settings are constan
 | Output | `[B, 3, 64, 64]` in `[-1, 1]` | `[B, 1]` raw logit |
 | Parameters | ≈ 13.28 M | ≈ 13.24 M |
 
-> Parameter counts were computed from the layer shapes and cross-checked against checkpoint sizes (`generator_epoch_XX.pth` ≈ 53 MB; `last.pth` ≈ 318 MB = both networks + two Adam states).
+
 
 ### Training Procedure
 
@@ -912,7 +912,7 @@ Each step performs one discriminator update followed by one generator update (1:
 
 ---
 
-## 📈 Results
+## Results
 
 ### Loss and Discriminator Confidence
 
@@ -951,7 +951,7 @@ Per-epoch averages over the 32 logged steps in each epoch (every 50th step), tak
 
 ---
 
-## 🔐 Security Considerations
+## Security Considerations
 
 | Concern | Status |
 |---|---|
@@ -961,7 +961,7 @@ Per-epoch averages over the 32 logged steps in each epoch (every 50th step), tak
 | Dataset licensing | CelebA is distributed for **non-commercial research use**; the images are not redistributed here (`img_align_celeba/` is git-ignored) |
 | Responsible use | A face generator can be misused for deceptive media; samples here are low-fidelity research artefacts, and any derivative work should label synthetic imagery as such |
 
-## ⚡ Performance Optimizations
+## Performance Optimizations
 
 - **Parallel decoding:** JPEG decoding, not the GPU, is the bottleneck — hence `num_workers=4`.
 - **`persistent_workers=True`:** avoids re-spawning workers each epoch (slow on Windows).
@@ -969,11 +969,11 @@ Per-epoch averages over the 32 logged steps in each epoch (every 50th step), tak
 - **`detach()` on the D step:** the generator graph is not back-propagated when only D is updated.
 - **Slim notebook:** the 202,599-name `os.listdir` printout was replaced with a 5-item peek (it had bloated the notebook to ~10 MB).
 
-## 📏 Scalability Design
+## Scalability Design
 
-This is a single-GPU, single-process experiment. It scales *up* simply (larger `batch_size`, more epochs via resume) but not *out*. Moving to higher resolution or bigger models would first require convolutional architectures and mixed precision — see the [Roadmap](#-roadmap-proposed).
+This is a single-GPU, single-process experiment. It scales *up* simply (larger `batch_size`, more epochs via resume) but not *out*. Moving to higher resolution or bigger models would first require convolutional architectures and mixed precision — see the [Roadmap](#roadmap-proposed).
 
-## 🧪 Testing, Error Handling and Logging
+## Testing, Error Handling and Logging
 
 | Area | Current state |
 |---|---|
@@ -981,7 +981,7 @@ This is a single-GPU, single-process experiment. It scales *up* simply (larger `
 | Error handling | Exceptions propagate to the notebook; recovery is via per-epoch checkpoints and atomic writes |
 | Logging | `print` every 50 steps plus the in-memory `history` dict; plotted at the end |
 
-## 🧭 Scope — What's Intentionally Not Here
+## Scope — What's Intentionally Not Here
 
 Face-Forge is a research notebook, so these usual README sections do not apply and are deliberately omitted rather than padded out:
 
@@ -996,7 +996,7 @@ Face-Forge is a research notebook, so these usual README sections do not apply a
 
 ---
 
-## 🧩 Engineering Decisions and Tradeoffs
+## Engineering Decisions and Tradeoffs
 
 | Decision | Why | Tradeoff |
 |---|---|---|
@@ -1011,7 +1011,7 @@ Face-Forge is a research notebook, so these usual README sections do not apply a
 
 ---
 
-## 🛠 Troubleshooting
+## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
@@ -1025,7 +1025,7 @@ Face-Forge is a research notebook, so these usual README sections do not apply a
 | Notebook is many MB | Printed the full file list or kept large outputs | Print only a slice (`os.listdir(...)[:5]`) |
 | `git push` rejected, file too large | Tried to commit `last.pth` | Keep `checkpoints/` in `.gitignore`; use Git LFS or a Hugging Face repo if you want to share weights |
 
-## ❓ FAQ
+## FAQ
 
 **Why is the image quality low?** A fully-connected GAN treats an image as a flat vector of 12,288 numbers and cannot exploit local structure. Five epochs is also very short. Convolutional layers and longer training are the standard remedies.
 
@@ -1040,7 +1040,7 @@ Face-Forge is a research notebook, so these usual README sections do not apply a
 ---
 
 
-## 🤝 Contributing
+## Contributing
 
 Issues and pull requests are welcome. For a change to the model or training loop, please include before/after sample grids (same `fixed_noise`) and the loss curves so the effect is visible.
 
@@ -1049,7 +1049,7 @@ Issues and pull requests are welcome. For a change to the model or training loop
 3. Open a pull request describing what changed and why
 
 
-## 🙏 Credits and Acknowledgements
+## Credits and Acknowledgements
 
 - **Author:** Karthika Krishna M ([@KARTHIKAKRISHNA123](https://github.com/KARTHIKAKRISHNA123))
 - **Method:** I. Goodfellow et al., *Generative Adversarial Nets*, NeurIPS 2014
